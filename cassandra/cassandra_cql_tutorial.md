@@ -286,4 +286,53 @@ view_id timeuuid,
 primary key(page_id, view_id, movie_name)
 );
 ```
-This case the first one is the only primary key rest are clustering columns
+This case the first one is the only primary key rest are clustering columns.
+
+When you don't need to know the exact value but just want to make sure its unique and associated with current date and time
+```sql  
+insert into moviedb.website_visits(page_id, movie_name, view_id) values ('a1dbc23r', 'The Shawshank Redemption', now());
+```
+for querying data from columns with type timeuuid cql provide some inbuilt functions
+e.g
+```sql
+select page_id, movie_name, dateOf(view_id) from moviedb.website_visits;
+
+select page_id, movie_name, unixTimestampOf(view_id) from moviedb.website_visits;
+
+select dateOf(view_id)
+from moviedb.website_visits
+where page_id='a1dbc23r'
+and view_id>=maxTimeuuid('2018-11-01 00:00+0000')
+and view_id <minTimeuuid('2018-11-27 00:00+0000');
+```
+
+Using a timeuuid as a clustering key is very effective method to handle timeseries data. 
+In multiple node with multiple write scenario this will handle perfectly the data arriving in order and the same while storing the data even if it is delayed by failure of nodes.
+
+
+## Bucketing timeseries data
+
+In cassandra you can store a maximum of 2 billion cells(rows X columns) inside a single partition key.
+All data which belongs to a single partition must fit in a single node in a cluster.
+In Iot scenario where data of billions of devices are stored with a bad partition key we might reach that limit very quickly.
+
+```sql
+create table iot.moving_device_data(
+year int,
+week_in_year int,
+reading_id timeuuid,
+device_type text,
+device_id text,
+data text,
+primary key((year, week_in_year),reading_id)
+)with clustering order by (reading_id desc);
+
+insert into iot.moving_device_data(year, week_in_year, reading_id, device_type, device_id, data) values
+(2018, 47, now(), 'Commercial Car', 'abc12e6re', $${"AccelerationX":1.1523132,"AccelerationY":8.338104,"Altitude":819,"AccelerationZ":3.69458,"Latitude":12.915812,"VehicleSpeed":1.98,"_time":"2018-09-02T07:04:24.099Z","OrientationZ":-0.13475741,"OrientationY":-0.30233166,"Longitude":77.615204,"OrientationX":-1.13624},{"AccelerationX":1.3079376,"AccelerationY":8.217194,"Altitude":819,"AccelerationZ":3.6526947,"Latitude":12.915812,"VehicleSpeed":1.98,"_time":"2018-09-02T07:04:25.019Z","OrientationZ":-0.1795138,"OrientationY":-0.34385014,"Longitude":77.615204,"OrientationX":-1.1296704}$$);
+
+insert into iot.moving_device_data(year, week_in_year, reading_id, device_type, device_id, data) values
+(2018, 47, now(), 'Commercial Car','abc12e6re', $${"AccelerationX":1.2205505,"AccelerationY":8.268677,"Altitude":819,"AccelerationZ":3.8214874,"Latitude":12.915812,"VehicleSpeed":1.98,"_time":"2018-09-02T07:04:25.039Z","OrientationZ":-0.13874406,"OrientationY":-0.30915084,"Longitude":77.615204,"OrientationX":-1.1190871},{"AccelerationX":1.190628,"AccelerationY":8.3506775,"Altitude":819,"AccelerationZ":3.4515839,"Latitude":12.915812,"VehicleSpeed":1.98,"_time":"2018-09-02T07:04:25.059Z","OrientationZ":-0.14570934,"OrientationY":-0.33216998,"Longitude":77.615204,"OrientationX":-1.1586124}$$);
+
+insert into iot.moving_device_data(year, week_in_year, reading_id, device_type, device_id, data) values
+(2018, 47, now(), 'Commercial Car','abc12e6re', $${"AccelerationX":1.2444916,"AccelerationY":8.343506,"Altitude":819,"AccelerationZ":3.63414,"Latitude":12.915812,"VehicleSpeed":1.98,"_time":"2018-09-02T07:04:25.079Z","OrientationZ":-0.12858334,"OrientationY":-0.32992816,"Longitude":77.615204,"OrientationX":-1.1393306},{"AccelerationX":1.1840363,"AccelerationY":8.483551,"Altitude":819,"AccelerationZ":3.349823,"Latitude":12.915812,"VehicleSpeed":1.98,"_time":"2018-09-02T07:04:25.099Z","OrientationZ":-0.12846963,"OrientationY":-0.33975595,"Longitude":77.615204,"OrientationX":-1.1741878}$$);
+```
