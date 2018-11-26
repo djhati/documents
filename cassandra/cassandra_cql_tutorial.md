@@ -1,6 +1,6 @@
 # CQL tutorial
 
-## Creating keyspace in sicgle datacenter
+## Creating keyspace in single datacenter
 `create keyspace iot with replication = {'class': 'SimpleStrategy', 'replication_factor':3}`
 
 Observe the keyspace in the cluster by using the nodetool command
@@ -13,13 +13,56 @@ Using nodetool status with keyspace
 
 ## Creating keyspace in multi dc cluster
 
-`create keyspace iot with replication = {'class': 'NetworkTopologyStrategy', 'DC1':2,'DC2':1}`
+`create keyspace iot with replication = {'class': 'NetworkTopologyStrategy', 'DC1':2,'DC2':1};`
 
+## Alter Keyspace
+
+`alter keyspace iot with replication = {'class: 'NetworkTopologyStrategy', 'DC2': 2};`
+
+## Drop Keyspace
+
+`drop leyspace iot;`
+
+## Use Keyspace
+
+`use devices;`
 
 ## Create Table
 
-`create table devices(id varchar primary key`
+`create table devices(id varchar primary key);`
+ or
+ 
+`create table iot.devices(id varchar primary key);`
 
+### create table with properties
+`create table iot.devices(id varchar primary key) with comment='Table for IoT Devices';`
+
+Other table properties
+* comment
+* caching(keys, rows_per_partition)
+* read_repair_chance
+* dclocal_read_repair_chance
+* default_time_to_live
+* gc_grace_seconds
+ 
+## Alter Table
+
+### Adding columns
+`alter table iot.devices add type varchar;`
+
+### Removing columns
+`alter table iot.devices drop type;`
+
+## Remove Data 
+
+` truncate iot.devices;`
+
+## Drop Table
+
+`drop iot.devices;`
+
+
+## Consistency Level
 To check the consistency level use the following command
 
 `consistency`
@@ -68,6 +111,43 @@ Tracing session: 493b9120-f148-11e8-9912-6d2c86545d91
                                                                               Request complete | 2018-11-26 06:55:40.367130 | 172.17.0.2 |          25130 | 127.0.0.1
 
 ```
+
+## Cassandra DataTypes
+
+
+### Basic DataTypes
+
+#### Numeric (Integer or Float)
+bigint, decimal, double, float, int, smallint, tinyint, varint
+
+#### String
+ascii, text, varchar
+
+#### Date or Time Related
+date, duration, time, timestamp, timeuuid
+
+#### UUID
+timeuuid, uuid
+
+#### Counter
+counter
+
+#### Large Objects
+blob
+
+#### IP Address
+inet
+
+### Collection DataTypes
+
+Maps, Sets and Lists
+
+### Tuples
+
+### User Defined Types
+
+## Partition Keys and Clustering Columns
+
 
 ## Inserting data
 
