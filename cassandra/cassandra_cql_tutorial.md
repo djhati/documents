@@ -197,7 +197,7 @@ insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_m
 ('The Godfather', '1975-05-15', 9, 'Al Pacino', 202, 'Francis Ford Coppola', 'Drama');
 
 insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
-('The Dark Knight', '2008-07-24', 9, 'Christian Bale', 152, 'Christopher Nolan', 'Action');
+('The Dark Knight', '2008-07-24', 9, 'Christian Bale', 152, 'Chris Nolan', 'Action');
 
 insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
 ('12 Angry Men', '1957-04-01', 8, 'Henry Fonda', 96, 'Sidney Lumet', 'Crime');
@@ -238,3 +238,52 @@ Selecting the data with the ttl value in cassandra
 ```sql
 select lead_actor, ttl(lead_actor) from moviedb.movies;
 ```
+## Updating the data with TTL
+```sql
+update moviedb.movies using ttl 300 
+set director = 'Christopher Nolan'
+where name='The Dark Knight' 
+and release_date='2008-07-24'
+and rating = 9
+and runtime_in_minutes = 152
+and genre='Action';
+```
+## Writetime in Cassandra
+In cassandra it is possible to check the last update time of the table
+
+```sql
+select name, writetime(director) from moviedb.movies;
+```
+
+## Tombstones
+
+## Create and query Tables with Counter
+
+```sql
+create table moviedb.ratings(
+name text,
+year_of_release int,
+rating_count counter,
+primary key(name, year_of_release));
+```
+
+You can only use update statements in tables with Counters
+
+```sql
+update moviedb.ratings 
+set rating_count= rating_count + 1
+where name ='The Shawshank Redemption' 
+and year_of_release=1995 ;
+```
+
+## Handling timeseries data
+
+```sql
+create table moviedb.website_visits(
+page_id text,
+movie_name text,
+view_id timeuuid,
+primary key(page_id, view_id, movie_name)
+);
+```
+This case the first one is the only primary key rest are clustering columns
