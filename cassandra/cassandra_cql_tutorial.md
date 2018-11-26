@@ -375,6 +375,9 @@ and device_id='demo-device-id-01';
 ```
 
 ### Map
+
+Now we have stored only the the sensors present in the thing, but we don't know which datatype they belong. To add the information we will use a map of sensor name and its data type.
+
 ```sql
 create table iot.things(
 id text,
@@ -384,4 +387,23 @@ primary key(id, device_id));
 
 insert into iot.things(id,device_id, fields) 
 values ('demo-thing-id-01', 'demo-device-id-01', {'Latitude':'Decimal', 'Longitude':'Decimal', 'AccelerationX':'Decimal', 'AccelerationY':'Decimal', 'Engine RPM':'Integer', 'OrientationX':'Radian'});
+```
+
+Adding and deleting elements from the map is same as set. Please check the official cassandra website for more details on this subject.
+
+### Tuples
+We also need to store precision of decimal values in fields. So it contains more information which cannot be set achieved only through the map data type. We need a datatype which can contain more values. Though here in the example we have used tuple with two values it can be used for more than 2 values. This is also example opf nesting of complex data types.
+
+Here you might have noticed we have used the frozen keyword in this case as cassandra stored the nested types as blob internally so they cannot be updated partially. frozen explicitly says the same. If frozen keyword is used against a complex data type then the data type is updated completely even if there is a partial modification.
+
+```sql
+create table iot.things(
+id text,
+fields map<text, frozen<tuple<text,text>>>,
+device_id text,
+primary key(id, device_id));
+
+
+insert into iot.things(id,device_id, fields) 
+values ('demo-thing-id-01', 'demo-device-id-01', {'Latitude':('Decimal','4'), 'Longitude':('Decimal','4'), 'AccelerationX':('Decimal','4'), 'AccelerationY':('Decimal','4'), 'Engine RPM':('Integer', 'NA'), 'OrientationX':('Radian', 'NA')});
 ```
