@@ -336,3 +336,52 @@ insert into iot.moving_device_data(year, week_in_year, reading_id, device_type, 
 insert into iot.moving_device_data(year, week_in_year, reading_id, device_type, device_id, data) values
 (2018, 47, now(), 'Commercial Car','abc12e6re', $${"AccelerationX":1.2444916,"AccelerationY":8.343506,"Altitude":819,"AccelerationZ":3.63414,"Latitude":12.915812,"VehicleSpeed":1.98,"_time":"2018-09-02T07:04:25.079Z","OrientationZ":-0.12858334,"OrientationY":-0.32992816,"Longitude":77.615204,"OrientationX":-1.1393306},{"AccelerationX":1.1840363,"AccelerationY":8.483551,"Altitude":819,"AccelerationZ":3.349823,"Latitude":12.915812,"VehicleSpeed":1.98,"_time":"2018-09-02T07:04:25.099Z","OrientationZ":-0.12846963,"OrientationY":-0.33975595,"Longitude":77.615204,"OrientationX":-1.1741878}$$);
 ```
+
+
+## Working with Complex Data Types
+
+### Set
+```sql
+create table iot.things(
+id text,
+fields set<text>,
+device_id text,
+primary key(id, device_id));
+
+insert into iot.things(id,device_id, fields) 
+values ('demo-thing-id-01', 'demo-device-id-01', {'Latitude', 'Longitude', 'AccelerationX', 'AccelerationY'});
+```
+
+Adding elements in the existing set
+```sql
+update iot.things
+set fields = fields + {'Altitude'}
+where id = 'demo-thing-id-01' 
+and device_id='demo-device-id-01';
+```
+Remove items from set
+```sql
+update iot.things
+set fields = fields - {'AccelerationX', 'AccelerationY'}
+where id = 'demo-thing-id-01' 
+and device_id='demo-device-id-01';
+```
+Delete all items from set
+```sql
+update iot.things
+set fields = {}
+where id = 'demo-thing-id-01' 
+and device_id='demo-device-id-01';
+```
+
+### Map
+```sql
+create table iot.things(
+id text,
+fields map<text, text>,
+device_id text,
+primary key(id, device_id));
+
+insert into iot.things(id,device_id, fields) 
+values ('demo-thing-id-01', 'demo-device-id-01', {'Latitude':'Decimal', 'Longitude':'Decimal', 'AccelerationX':'Decimal', 'AccelerationY':'Decimal', 'Engine RPM':'Integer', 'OrientationX':'Radian'});
+```
