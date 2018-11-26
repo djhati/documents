@@ -1,7 +1,10 @@
 # CQL tutorial
 
 ## Creating keyspace in single datacenter
-`create keyspace iot with replication = {'class': 'SimpleStrategy', 'replication_factor':3}`
+
+```sql
+create keyspace iot with replication = {'class': 'SimpleStrategy', 'replication_factor':3}
+```
 
 Observe the keyspace in the cluster by using the nodetool command
 
@@ -12,30 +15,53 @@ Using nodetool status with keyspace
 `docker exec -it cnode1 nodetool status iot`
 
 ## Creating keyspace in multi dc cluster
-
-`create keyspace iot with replication = {'class': 'NetworkTopologyStrategy', 'DC1':2,'DC2':1};`
-
+```sql
+create keyspace iot with replication = {'class': 'NetworkTopologyStrategy', 'DC1':2,'DC2':1};
+```
 ## Alter Keyspace
 
-`alter keyspace iot with replication = {'class: 'NetworkTopologyStrategy', 'DC2': 2};`
+```sql
+alter keyspace iot with replication = {'class: 'NetworkTopologyStrategy', 'DC2': 2};
+```
 
 ## Drop Keyspace
 
-`drop leyspace iot;`
+```sql
+drop keyspace iot;
+```
 
 ## Use Keyspace
 
-`use devices;`
+```sql
+use devices;
+```
 
 ## Create Table
 
-`create table devices(id varchar primary key);`
+```sql
+create table devices(id varchar primary key);`\
+```
  or
- 
-`create table iot.devices(id varchar primary key);`
+
+e.g.
+```sql
+create table moviedb.movies(
+name text,
+release_date timestamp,
+rating int,
+lead_actor text,
+runtime_in_minutes int,
+description text,
+director text,
+genre text,
+primary key ((name, release_date), rating, runtime_in_minutes, genre)
+)with clustering order by (rating DESC, runtime_in_minutes DESC);
+```
 
 ### create table with properties
-`create table iot.devices(id varchar primary key) with comment='Table for IoT Devices';`
+```sql
+create table iot.devices(id varchar primary key) with comment='Table for IoT Devices';
+```
 
 Other table properties
 * comment
@@ -48,18 +74,26 @@ Other table properties
 ## Alter Table
 
 ### Adding columns
-`alter table iot.devices add type varchar;`
+```sql
+alter table iot.devices add type varchar;
+```
 
 ### Removing columns
-`alter table iot.devices drop type;`
+```sql
+alter table iot.devices drop type;
+```
 
 ## Remove Data 
 
-` truncate iot.devices;`
+```sql
+truncate iot.devices;
+```
 
 ## Drop Table
 
-`drop iot.devices;`
+```sql
+drop iot.devices;
+```
 
 
 ## Consistency Level
@@ -151,4 +185,56 @@ Maps, Sets and Lists
 
 ## Inserting data
 
-`insert into devices (id) values ('dhrub-mobile');` 
+e.g.
+```sql
+insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
+('The Shawshank Redemption', '1995-02-17', 9, 'Tim Robbins', 142, 'Frank Darabont', 'Drama');
+
+insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
+('The Godfather', '1972-08-24', 9, 'Marlon Brando', 175, 'Francis Ford Coppola', 'Drama');
+
+insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
+('The Godfather', '1975-05-15', 9, 'Al Pacino', 202, 'Francis Ford Coppola', 'Drama');
+
+insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
+('The Dark Knight', '2008-07-24', 9, 'Christian Bale', 152, 'Christopher Nolan', 'Action');
+
+insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
+('12 Angry Men', '1957-04-01', 8, 'Henry Fonda', 96, 'Sidney Lumet', 'Crime');
+```
+
+## Selecting Data
+
+```sql
+select * from moviedb.movies where name='The Godfather';
+
+select * from moviedb.movies where name='The Godfather' allow filtering;;
+
+select * from moviedb.movies where name='The Godfather' and release_date = '1975-05-15';
+
+select * from moviedb.movies where rating<9 allow filtering;
+```
+
+## Delete Data
+
+Deleting the wrongly updated column
+```sql
+delete from moviedb.movies
+where name='The Godfather' and release_date = '1975-05-15';
+```
+Inserting again the correct column
+```sql
+insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
+('The Godfather: Part II', '1975-05-15', 9, 'Al Pacino', 202, 'Francis Ford Coppola', 'Drama');
+```
+
+## Inserting data with TTL
+```sql
+insert into moviedb.movies (name, release_date, rating, lead_actor, runtime_in_minutes, director, genre) values
+('12 Angry Men', '1957-04-01', 8, 'Henry Fonda', 96, 'Sidney Lumet', 'Crime') using ttl 120;
+```
+
+Selecting the data with the ttl value in cassandra
+```sql
+select lead_actor, ttl(lead_actor) from moviedb.movies;
+```
