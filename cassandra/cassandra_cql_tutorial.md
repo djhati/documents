@@ -182,6 +182,26 @@ Maps, Sets and Lists
 
 ## Partition Keys and Clustering Columns
 
+In cassandra the partition key is responsible for storing the data in nodes. There are three ways to get the parition key from the primary key.
+
+* The most simple way is when the primary key will have one single column.
+ e.g.
+ ```sql
+create table iot.devices(id varchar primary key)';
+```
+In such case the column in the primary key is the partition key
+
+* The second type is when the primary key will contain several columns in a single bracket. e.g.
+`PRIMARYKEY (id, song_order,...)`
+
+ Here the first key is the partition key and the rest are the clustering columns. Clustering is a storage engine process that sorts data within the partition. This type of keys are called/was called compound keys.
+
+* The third and the mostly used case is `PRIMARY KEY ((block_id, breed), color, short_hair)`
+
+  In this case there are two sets of brackets, one inside the another. The inner brackets containing columns are the combined partition keys and the columns outside that are the clustering columns. This type of partition keys are called composite partition key.
+  
+  Please note in the where clause you can use only either partition keys or clustering columns. It will throw you an error if you try to filter using any other column.
+
 
 ## Inserting data
 
@@ -256,6 +276,10 @@ select name, writetime(director) from moviedb.movies;
 ```
 
 ## Tombstones
+
+Cassandra's processes for deleting data are designed to improve performance, and to work with Cassandra's built-in properties for data distribution and fault-tolerance.
+
+Cassandra treats a delete as an insert or upsert. The data being added to the partition in the DELETE command is a deletion marker called a tombstone. The tombstones go through Cassandra's write path, and are written to SSTables on one or more nodes. The key difference feature of a tombstone: it has a built-in expiration date/time. At the end of its expiration period (for details see below) the tombstone is deleted as part of Cassandra's normal compaction process.
 
 ## Create and query Tables with Counter
 
