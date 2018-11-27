@@ -23,13 +23,20 @@ Then execute `cqlsh` for starting the sql command window
   
  `docker run --name cnode3 -d -e CASSANDRA_SEEDS="$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' cnode1)" cassandra:latest`
  
+ To check if the containers are up please use the  `docker ps` command.
+ 
 ## Running nodetool
+
+To check if the cluster is up and running cassandra have an utility called nodetool. Please execute the following command to check if the cluster is up and running.
 
 `docker exec -it cassandra-cluster-node1 nodetool status`
 
 `docker exec -it cassandra-cluster-node1 nodetool ring`
 
 ## Creating Multi Datacenter Cassandra Cluster
+
+If you want to create a multi DC Cassandra cluster you need to execute the next series of commands in your machine.
+
 ```bash
 docker run --name dcnode1 \
 -e CASSANDRA_CLUSTER_NAME=DHATI_CS_CLUSTER \
